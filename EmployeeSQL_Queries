@@ -1,0 +1,119 @@
+-- VIEW ALL EMPLOYEES
+SELECT *
+FROM employees
+;
+
+-- VIEW EMPLOYEE NUMBER, LAST NAME, FIRST NAME, SEX, AND SALARY
+SELECT e.emp_no, e.last_name, e.first_name, e.sex, s.salary
+FROM EMPLOYEES e
+	JOIN SALARIES s on e.emp_no = s.emp_no
+    ;
+
+-- EMPLOYEES HIRED IN 1986
+SELECT e.first_name, e.last_name, e.hire_date
+FROM EMPLOYEES e
+WHERE hire_date BETWEEN '1986-01-01' AND '1986-12-31'
+;  
+
+-- VIEW ALL DEPARTMENTS
+SELECT*
+FROM departments
+;
+
+-- VIEW ALL DEPARTMENT MANAGERS
+SELECT*
+FROM dept_manager
+;
+
+-- LIST DEPARTMENT MANAGERS WITH DEPARTMENT NUMBER, NAME, MANAGER'S EMPLOYEE NUMBER, LAST NAME, AND FIRST NAME
+WITH dept_mgr_cte as(
+    SELECT dm.dept_no, d.dept_name, dm.emp_no
+    FROM dept_manager dm
+    	JOIN departments d on d.dept_no = dm.dept_no
+)
+	SELECT dmcte.dept_no, dmcte.dept_name, dmcte.emp_no, e.last_name, e.first_name
+	FROM employees e
+		JOIN dept_mgr_cte dmcte on dmcte.emp_no = e.emp_no
+        ;
+
+-- COUNT EMPLOYEES IN DEPARTMENT EMPLOYEES TABLE
+SELECT count(emp_no)
+FROM dept_employees
+;
+
+-- COUNT EMPLOYEES IN EMPLOYEES TABLE
+SELECT count(emp_no)
+FROM employees
+;
+
+TRUNCATE dept_employees
+
+-- LIST THE DEPARTMENT OF EACH EMPLOYEE
+WITH dept_cte as(
+    SELECT d.dept_no, d.dept_name, de.emp_no
+    FROM departments d
+    	JOIN dept_employees de on d.dept_no = de.dept_no
+)
+	SELECT dcte.emp_no, e.first_name, e.last_name, dcte.dept_name
+	FROM employees e
+		JOIN dept_cte dcte on dcte.emp_no = e.emp_no;
+
+-- EMPLOYEES WHOSE FIRST NAME IS 'HERCULES' AND LAST NAME BEGINS WITH 'B'
+SELECT first_name, last_name, sex
+FROM employees
+WHERE first_name = 'Hercules'
+AND last_name like 'B%';
+
+--EMPLOYEES IN THE SALES DEPARTMENT
+WITH sales_cte as(
+    SELECT dept_no, dept_name
+    FROM departments d
+    WHERE dept_name = 'Sales'
+)
+, dept_sales as (
+    SELECT ds.dept_no, ds.dept_name, de.emp_no
+    FROM dept_employees de
+    	JOIN sales_cte ds on ds.dept_no = de.dept_no
+)
+	SELECT dsa.emp_no, e.last_name, e.first_name, dsa.dept_name
+	FROM employees e
+		JOIN dept_sales dsa on dsa.emp_no = e.emp_no;
+        
+--EMPLOYEES IN THE SALES AND DEVELOPEMENT DEPARTMENT
+WITH sales_cte as(
+    SELECT dept_no, dept_name
+    FROM departments d
+    WHERE dept_name = 'Sales' OR dept_name='Development'
+)
+, dept_sales as (
+    SELECT ds.dept_no, ds.dept_name, de.emp_no
+    FROM dept_employees de
+    	JOIN sales_cte ds on ds.dept_no = de.dept_no
+)
+	SELECT dsa.emp_no, e.last_name, e.first_name, dsa.dept_name
+	FROM employees e
+		JOIN dept_sales dsa on dsa.emp_no = e.emp_no;
+        
+-- FREQUENCY COUNT OF EMPLOYEE LAST NAMES
+SELECT last_name, count(last_name)
+FROM employees
+GROUP BY last_name
+
+-- VIEW ALL TITLES
+Select *
+From titles
+
+--BONUS: EMPLOYEE WITH SALARY AND TITLE
+WITH salary_cte as(
+    SELECT s.emp_no, s.salary, e.emp_title_id
+    FROM salaries s
+    	JOIN employees e on e.emp_no = s.emp_no
+)
+    SELECT scte.emp_no, scte.salary, scte.emp_title_id, t.title
+    FROM titles t
+    	JOIN salary_cte scte on scte.emp_title_id = t.title_id;
+
+-- EPILOGUE: EMPLOYEE 499942
+SELECT *
+FROM employees
+WHERE emp_no = 499942
